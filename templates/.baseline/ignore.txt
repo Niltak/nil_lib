@@ -1,0 +1,23 @@
+building configuration
+serial number
+crypto pki trustpoint
+crypto pki certificate
+processor board
+reload
+uptime
+current configuration
+Template Version
+System restarted at
+banner login
+banner motd
+class-map
+policy-map
+vlan
+^version
+^switch \d provision
+^errdisable recovery cause
+^interface
+^!
+^snmp-server enable traps 
+^config.register
+^end$

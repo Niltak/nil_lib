@@ -1,0 +1,194 @@
+no service pad
+service tcp-keepalives-in
+service tcp-keepalives-out
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
+service password-encryption
+service counters max age 5
+service call-home
+no platform punt-keepalive disable-kernel-core
+!
+hostname {{ HOSTNAME }}
+!
+vrf definition Mgmt-vrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+logging userinfo
+logging buffered 32768 informational
+no logging console
+no logging monitor
+enable secret 5 {{ ENABLE }}
+!
+aaa new-model
+!
+aaa group server tacacs+ OOB
+ server-private 172.28.242.133 key 7 {{ TACACS_KEY }}
+ server-private 172.28.242.136 key 7 {{ TACACS_KEY }}
+ server-private 172.28.242.137 key 7 {{ TACACS_KEY }}
+ ip tacacs source-interface Vlan1000
+!
+aaa group server tacacs+ ISE
+ server-private 172.28.242.150 timeout 2 key 7 {{ TACACS_KEY }}
+ server-private 172.28.242.151 timeout 2 key 7 {{ TACACS_KEY }}
+ ip tacacs source-interface Vlan1000
+!
+aaa authentication login default group ISE local none
+aaa authentication login console local group ISE none
+aaa authentication enable default group ISE none
+aaa authorization config-commands
+aaa authorization exec default group ISE local 
+aaa authorization exec console group ISE none 
+aaa authorization commands 0 default group ISE local none 
+aaa authorization commands 1 default group ISE local none 
+aaa authorization commands 15 default group ISE local none 
+aaa accounting send stop-record authentication failure
+aaa accounting exec default stop-only group ISE
+aaa accounting system default start-stop group ISE
+!
+aaa session-id common
+clock timezone EST -5 0
+clock summer-time EDT recurring
+!
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+!
+no ip domain lookup
+ip name-server 128.210.11.5 128.210.11.57
+ip domain list tcom.purdue.edu
+ip domain name tcom.purdue.edu
+!
+ip dhcp snooping vlan 1-4094
+no ip dhcp snooping information option
+ip dhcp snooping database tftp://172.28.248.19/dhcpsnoop/{{ FILE_NAME }}
+ip dhcp snooping database write-delay 30
+ip dhcp snooping database timeout 30
+ip dhcp snooping
+!
+vtp domain {{ VTP_DOMAIN }}
+vtp mode transparent
+udld aggressive
+!
+diagnostic bootup level minimal
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+archive
+ log config
+  logging enable
+  logging size 200
+  notify syslog contenttype plaintext
+  hidekeys
+!
+username admin privilege 15 password 7 {{ USERNAME_KEY }}
+username guest password 7 {{ USERNAME_KEY }}
+!
+redundancy
+ mode sso
+!
+transceiver type all
+ monitoring
+!
+ip forward-protocol nd
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 172.28.96.1
+!
+ip scp server enable
+!
+ip access-list standard ACL-SNMP-RO
+ permit 128.210.11.121
+ permit 128.210.11.119
+ permit 128.210.11.42
+ permit 10.15.252.140
+ permit 128.210.211.2
+ permit 10.15.252.86
+ permit 172.28.248.0 0.0.0.255
+ permit 192.168.240.0 0.0.15.255
+ permit 172.28.242.128 0.0.0.127
+ip access-list standard ACL-SNMP-RW
+ permit 192.168.255.254
+ permit 128.210.211.2
+ permit 172.28.242.134
+ permit 172.28.248.0 0.0.0.255
+!
+ip access-list extended AutoQos-4.0-Acl-Default
+ permit ip any any
+ip access-list extended Device-Mgmt-Access
+ permit tcp host 128.210.211.2 any eq 22
+ permit tcp 192.168.240.0 0.0.15.255 any eq 22
+ permit tcp 172.28.0.0 0.1.255.255 any eq 22
+ permit tcp host 128.210.211.18 any eq 22
+ip sla enable reaction-alerts
+logging facility local6
+logging source-interface Vlan1000
+logging host 172.28.238.106
+!
+snmp-server view itisproperview iso included
+snmp-server view itisproperview system.1 included
+snmp-server view itisproperview lldpRemEntry.6.0 excluded
+snmp-server community TBBa1lKHInd RW ACL-SNMP-RW
+snmp-server community WH0g0esTHre RW ACL-SNMP-RW
+snmp-server community itisproper view itisproperview RO ACL-SNMP-RO
+snmp-server trap-source Vlan1000
+snmp-server location BRK-1257:[40.422865, -86.924643]
+no snmp monitor response 5000
+snmp ifmib ifindex persist
+!
+control-plane
+ service-policy input system-cpp-policy
+!
+banner login ^C
++------------------------------------------------------------------+
+|                         Purdue University                        |
+|                           ITIS Networks                          |
+|                                                                  |
+|        ***** Unauthorized Use or Access Prohibited *****         |
+|                                                                  |
+|                For Authorized Official Use Only                  |
+|         You must have explicit permission to access or           |
+|         configure this device. All activities performed          |
+|         on this device may be logged, and violations of          |
+|        this policy may result in disciplinary action, and        |
+|         may be reported to law enforcement authorities.          |
+|                                                                  |
+|          There is no right to privacy on this device.            |
+|                                                                  |
++------------------------------------------------------------------+
+^C
+alias exec sis show int status
+alias exec smi show mac address-table | include
+!
+line con 0
+ logging synchronous
+ login authentication console
+ stopbits 1
+line vty 0 4
+ access-class Device-Mgmt-Access
+ exec-timeout 25 0
+ logging synchronous
+ transport preferred none
+ transport input ssh
+line vty 5 15
+ access-class Device-Mgmt-Access
+ exec-timeout 25 0
+ logging synchronous
+ transport preferred none
+ transport input ssh
+!
+ntp server 172.21.121.5
+ntp server 172.28.11.27
+ntp server 172.28.242.14
+!
+end
