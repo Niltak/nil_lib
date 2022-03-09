@@ -81,21 +81,28 @@ def switch_connect(switch):
 
 def switch_send_command(
     switch,
-    command,
-    fsm=False) -> dict:
+    command_list,
+    fsm=False,
+    fsm_template=None) -> dict:
     '''
-    Uses switch connection object to send a command. Can use textFSM.
+    Uses switch connection object to send list of commands. Can use textFSM.
     '''
+    if not isinstance(command_list, list):
+        command_list = [command_list]
     try:
         with switch_connect(switch) as connection:
             switch_name = connection.find_prompt()[:-1]
-            switch_output = connection.send_command(command, use_textfsm=fsm, delay_factor=5)
+            switch_output = []
+            for command in command_list:
+                switch_output.append(
+                    connection.send_command(
+                        command,
+                        use_textfsm=fsm,
+                        textfsm_template=fsm_template,
+                        delay_factor=5))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
-    except FileNotFoundError:
-        logging.warning('Failed to find command file!')
-        exit()
     
     return {
         'name': switch_name,
@@ -107,20 +114,24 @@ def switch_send_command(
 
 def switch_list_send_command(
     switch_list,
-    command,
-    fsm=False) -> list:
+    command_list,
+    fsm=False,
+    fsm_template=None) -> list:
     '''
-    Send command to a list of switches. Can use textFSM.
+    Send a list of commands to a list of switches. Can use textFSM.
     '''
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
+    if not isinstance(command_list, list):
+        command_list = [command_list] * len(switch_list)
 
     with ThreadPoolExecutor(max_workers=24) as pool:
         switch_list_output = pool.map(
             switch_send_command,
             switch_list,
-            [command] * len(switch_list),
-            [fsm] * len(switch_list))
+            command_list,
+            [fsm] * len(switch_list),
+            [fsm_template] * len(switch_list))
 
     return list(switch_list_output)
 
