@@ -1,0 +1,8 @@
+Value Required INTERFACE_NAME (.+)
+Value List INTERFACE_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^interface\s+${INTERFACE_NAME}
+  ^\s+${INTERFACE_DETAILS}
+  

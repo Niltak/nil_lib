@@ -1,0 +1,5 @@
+Value DOMAIN (ip domain.+)
+
+Start
+  ^${DOMAIN} -> Record
+  
