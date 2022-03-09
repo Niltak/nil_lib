@@ -271,6 +271,8 @@ def format_site_yaml(
     Formats site yaml file into list of switches ready for connection functions.
     Can search site yaml for certain keys. (Groups, Location, Roles, and Hostnames)
     '''
+    if not pwd:
+        pwd = verify_pwd(user)
     if switch_names:
         if not isinstance(switch_names, list):
             switch_names = [switch_names]
