@@ -1,0 +1,5 @@
+Value Required USERNAME ([U|u]sername\s.+)
+
+Start
+  ^${USERNAME} -> Record
+  
