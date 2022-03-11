@@ -1,0 +1,8 @@
+Value Required VLAN_NAME (Vlan.+)
+Value List VLAN_INTERFACE (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^interface\s+${VLAN_NAME}
+  ^\s+${VLAN_INTERFACE}
+  

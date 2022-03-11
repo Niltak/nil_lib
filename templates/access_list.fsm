@@ -1,0 +1,10 @@
+Value Required ACCESS_NAME (.+)
+Value Required ACCESS_TYPE (\S+)
+Value List ACCESS_LIST (.+)
+
+
+Start
+  ^\S -> Continue.Record
+  ^ip access.list\s${ACCESS_TYPE}\s+${ACCESS_NAME}
+  ^\s+${ACCESS_LIST}
+  

@@ -103,6 +103,9 @@ def switch_send_command(
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
+
+    if fsm:
+        switch_output = switch_output[0]
     
     return {
         'name': switch_name,
