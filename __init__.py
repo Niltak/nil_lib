@@ -64,8 +64,10 @@ def switch_connect(switch):
     
         switch['device_type'] = device_type.autodetect()
         if switch['device_type'] is None:
-            logging.debug(f"{switch['host']} had no auto-detected IOS")
-            switch['device_type'] = 'cisco_nxos'
+            if 'Cisco Nexus Operating System' in device_type.initial_buffer:
+                switch['device_type'] = 'cisco_nxos'
+            else:
+                logging.warning(f"{switch['host']} had no auto-detected IOS")
 
     try:
         switch_connection = netmiko.ConnectHandler(**switch)
@@ -74,6 +76,9 @@ def switch_connect(switch):
         return error
     except netmiko.NetmikoTimeoutException:
         logging.debug(f"Connection timed out on {switch['host']}")
+        return error
+    except EOFError:
+        logging.warning(f"Connection closed on {switch['host']}")
         return error
 
     return switch_connection
