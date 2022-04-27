@@ -67,7 +67,10 @@ def switch_connect(switch):
             if 'Cisco Nexus Operating System' in device_type.initial_buffer:
                 switch['device_type'] = 'cisco_nxos'
             else:
-                logging.warning(f"{switch['host']} had no auto-detected IOS")
+                switch['device_type'] = device_type.autodetect()
+                if switch['device_type'] is None:
+                    logging.warning(f"{switch['host']} had no auto-detected IOS")
+                    switch['device_type'] = 'cisco_ios'
 
     try:
         switch_connection = netmiko.ConnectHandler(**switch)
@@ -285,8 +288,8 @@ def format_site_yaml(
         if not isinstance(switch_names, list):
             switch_names = [switch_names]
 
-    if not site_yaml.endswith('.yaml'):
-        site_yaml = f'site_info/{site_yaml}/{site_yaml}.yaml'
+    if not site_yaml.endswith('.yaml') or site_yaml.endswith('.yml'):
+        site_yaml = f'site_info/{site_yaml}/{site_yaml}.yml'
 
     switch_list = file_loader(site_yaml)['Switchlist']
 
