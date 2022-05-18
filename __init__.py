@@ -112,8 +112,11 @@ def switch_send_command(
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
 
-    if fsm:
-        switch_output = switch_output[0]
+    if fsm and isinstance(switch_output, list):
+        if len(switch_output) > 0:
+            switch_output = switch_output[0]
+        else:
+            switch_output = ''
     
     return {
         'name': switch_name,
