@@ -111,13 +111,11 @@ def switch_send_command(
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
-
-    if fsm and isinstance(switch_output, list):
-        if len(switch_output) > 0:
-            switch_output = switch_output[0]
-        else:
-            switch_output = ''
     
+    if fsm and isinstance(switch_output, list):
+        if len(switch_output) == 1:
+            switch_output = switch_output[0]
+
     return {
         'name': switch_name,
         'host': switch['host'],
@@ -291,7 +289,7 @@ def format_site_yaml(
         if not isinstance(switch_names, list):
             switch_names = [switch_names]
 
-    if not site_yaml.endswith('.yaml') or site_yaml.endswith('.yml'):
+    if not site_yaml.endswith('.yaml') and not site_yaml.endswith('.yml'):
         site_yaml = f'site_info/{site_yaml}/{site_yaml}.yml'
 
     switch_list = file_loader(site_yaml)['Switchlist']
