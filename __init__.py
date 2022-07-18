@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 def verify_pwd(
     user,
-    test_switch_ip='172.28.242.41',
+    test_switch_ip='10.242.242.151',
     pwd=None) -> str:
     '''
     Verifies username and password. Outputs password.
@@ -58,6 +58,7 @@ def switch_connect(switch):
     if switch['device_type'] == 'autodetect':
         try:
             device_type = netmiko.SSHDetect(**switch)
+        # TODO: add more logging
         except Exception:
             del switch['password']
             return error
@@ -107,7 +108,8 @@ def switch_send_command(
                         command,
                         use_textfsm=fsm,
                         textfsm_template=fsm_template,
-                        delay_factor=5))
+                        delay_factor=5,
+                        read_timeout=15))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
@@ -134,8 +136,7 @@ def switch_list_send_command(
     '''
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
-    if not isinstance(command_list, list):
-        command_list = [command_list] * len(switch_list)
+    command_list = [command_list] * len(switch_list)
 
     with ThreadPoolExecutor(max_workers=24) as pool:
         switch_list_output = pool.map(
@@ -289,7 +290,7 @@ def format_site_yaml(
         if not isinstance(switch_names, list):
             switch_names = [switch_names]
 
-    if not site_yaml.endswith('.yaml') and not site_yaml.endswith('.yml'):
+    if not site_yaml.endswith('.yml'):
         site_yaml = f'site_info/{site_yaml}/{site_yaml}.yml'
 
     switch_list = file_loader(site_yaml)['Switchlist']
@@ -340,7 +341,7 @@ def file_loader(file_load, file_lines=None) -> list:
     '''
     with open(file_load, 'r') as file_info:
         if file_load.endswith('yaml') or file_load.endswith('yml'):
-            return yaml.load(file_info, Loader=yaml.FullLoader)
+            return yaml.load(file_info, Loader=yaml.CBaseLoader)
         elif file_load.endswith('json'):
             return json.load(file_info)
         elif file_load.endswith('fsm'):
@@ -362,10 +363,11 @@ def file_create(
     Can create yaml, json, or txt~ files.
     '''
     # TODO: Refactor
-    if file_dir[-1:] != '/':
-        file_dir += '/'
-    if not os.path.isdir(file_dir) and file_dir:
-        os.makedirs(file_dir)
+    if file_dir:
+        if file_dir[-1:] != '/':
+            file_dir += '/'
+        if not os.path.isdir(file_dir) and file_dir:
+            os.makedirs(file_dir)
 
     file_url = f'{file_dir}{file_name}.{file_extension}'
 
@@ -374,6 +376,7 @@ def file_create(
         
     with open(file_url, 'w') as data_file:
         if file_extension == 'yaml' or file_extension == 'yml':
+            yaml.Dumper.ignore_aliases = lambda *args : True
             data_file.writelines(yaml.dump(data, sort_keys=False))
         elif file_extension == 'json':
             json.dump(data, data_file, sort_keys=False, indent=1)
