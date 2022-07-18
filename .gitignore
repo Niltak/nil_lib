@@ -7,7 +7,7 @@ __pycache__/
 configs/audit/**
 configs/command_list/**
 configs/switch_list/**
-configs/*.yaml
+configs/*.yml
 site_info/**
 logs/**
 test_package*
