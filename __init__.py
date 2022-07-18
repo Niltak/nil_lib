@@ -54,7 +54,7 @@ def switch_connect(switch):
     Connects to a switch. Returns switch connection or error dict.
     '''
     error = {'name': False, 'output': switch['host']}
-    
+
     if switch['device_type'] == 'autodetect':
         try:
             device_type = netmiko.SSHDetect(**switch)
@@ -62,7 +62,7 @@ def switch_connect(switch):
         except Exception:
             del switch['password']
             return error
-    
+
         switch['device_type'] = device_type.autodetect()
         if switch['device_type'] is None:
             if 'Cisco Nexus Operating System' in device_type.initial_buffer:
@@ -113,7 +113,7 @@ def switch_send_command(
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
-    
+
     if fsm and isinstance(switch_output, list):
         if len(switch_output) == 1:
             switch_output = switch_output[0]
@@ -122,7 +122,7 @@ def switch_send_command(
         'name': switch_name,
         'host': switch['host'],
         'output': switch_output,
-        'device_type': switch['device_type']        
+        'device_type': switch['device_type']
     }
 
 
@@ -266,7 +266,7 @@ def format_switch_list(
         else:
             switch_format['device_type'] = device_type
             switch_format['host'] = switch
-            
+
         switch_list[index] = switch_format
 
     return switch_list
@@ -373,10 +373,10 @@ def file_create(
 
     if not override and os.path.isfile(file_url):
         file_url = f'{file_dir}{file_name}_new.{file_extension}'
-        
+
     with open(file_url, 'w') as data_file:
         if file_extension == 'yaml' or file_extension == 'yml':
-            yaml.Dumper.ignore_aliases = lambda *args : True
+            yaml.Dumper.ignore_aliases = lambda *args: True
             data_file.writelines(yaml.dump(data, sort_keys=False))
         elif file_extension == 'json':
             json.dump(data, data_file, sort_keys=False, indent=1)
