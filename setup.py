@@ -19,5 +19,5 @@ setuptools.setup(
     license="LICENSE.md",
     packages=setuptools.find_packages(),
     python_requires='>=3.7',
-    install_requires=['netmiko>=3.4.0', ''],
+    install_requires=['netmiko>=3.4.0', 'pyyaml'],
 )
