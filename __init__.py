@@ -136,13 +136,15 @@ def switch_list_send_command(
     '''
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
-    command_list = [command_list] * len(switch_list)
+    if fsm_template:
+        if not fsm_template.endswith('.fsm'):
+            fsm_template += '.fsm'
 
     with ThreadPoolExecutor(max_workers=24) as pool:
         switch_list_output = pool.map(
             switch_send_command,
             switch_list,
-            command_list,
+            [command_list] * len(switch_list),
             [fsm] * len(switch_list),
             [fsm_template] * len(switch_list))
 
