@@ -233,8 +233,8 @@ def switch_list_config_file(
     log_file_name = date.today().strftime("%m-%d-%Y") + '--' + log_file_name
     log_file_name_diff = log_file_name + '(diff)'
 
-    file_create(log_file_name, 'logs/', switch_list_log)
-    file_create(log_file_name_diff, 'logs/', switch_list_diff)
+    file_create(log_file_name, 'logs/network/', switch_list_log)
+    file_create(log_file_name_diff, 'logs/network/', switch_list_diff)
 
 
 def format_switch_list(
