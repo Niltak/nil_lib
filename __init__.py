@@ -13,6 +13,8 @@ import netmiko
 from datetime import date
 from textfsm import TextFSM
 from getpass import getpass
+from platform import system
+from subprocess import run, DEVNULL
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -384,6 +386,42 @@ def file_create(
             json.dump(data, data_file, sort_keys=False, indent=1)
         elif file_extension == 'txt' or 'ini':
             data_file.writelines(data)
+
+
+def ping(host, attempts='3') -> str | None:
+    '''
+    '''
+    suffix = '-c'
+    if system().lower() == 'windows':
+        suffix = '-n'
+
+    results = run(
+        f'ping {host} {suffix} {attempts}',
+        stdout=DEVNULL)
+
+    if results.returncode != 0:
+        return host
+
+
+def ping_list(host_list, attempts='3') -> list:
+    '''
+    '''
+    if not isinstance(host_list, list):
+        host_list = [host_list]
+
+    with ThreadPoolExecutor(max_workers=30) as pool:
+        ping_output = pool.map(
+            ping,
+            host_list,
+            attempts * len(host_list))
+
+    ping_output_list = list(ping_output)
+
+    for output in ping_output_list[:]:
+        if not output:
+            ping_output_list.remove(output)
+
+    return ping_output_list
 
 
 if __name__ == "__main__":
