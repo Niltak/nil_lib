@@ -1,4 +1,4 @@
-Value Required NTP (ntp server .+)
+Value Required NTP (ntp .+)
 
 Start
   ^${NTP} -> Record

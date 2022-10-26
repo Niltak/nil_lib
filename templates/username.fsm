@@ -1,4 +1,4 @@
-Value Required USERNAME ([U|u]sername\s.+)
+Value USERNAME ([U|u]sername .+|enable .+)
 
 Start
   ^${USERNAME} -> Record

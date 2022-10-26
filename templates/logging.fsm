@@ -1,4 +1,4 @@
-Value LOGGING (logging.+)
+Value LOGGING (logging .+)
 
 Start
   ^${LOGGING} -> Record
