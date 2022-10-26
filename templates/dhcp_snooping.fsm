@@ -1,0 +1,4 @@
+Value SNOOPING (ip dhcp snooping .+|no ip dhcp snooping .+)
+
+Start
+  ^${SNOOPING} -> Record

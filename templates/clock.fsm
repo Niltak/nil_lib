@@ -1,0 +1,4 @@
+Value CLOCK (clock .+)
+
+Start
+  ^${CLOCK} -> Record
