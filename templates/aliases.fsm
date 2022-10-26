@@ -1,4 +1,4 @@
-Value ALIAS (cli alias name.+)
+Value ALIAS (cli alias name .+|alias .+)
 
 Start
   ^${ALIAS} -> Record
