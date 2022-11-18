@@ -1,9 +1,9 @@
 Value EPM_LOGGING (epm .+)
 Value QOS (qos .+)
 Value SOURCE_ROUTE (no ip source-route|ip source-route)
-Value DOMAIN_LOOKUP (no ip domain lookup|ip domain lookup)
 Value ROUTING (no ip routing|ip routing)
 Value FORWARD (ip forward-.+)
+Value DOT1X (dot1x.+)
 Value PIM (ip pim .+)
 
 
@@ -11,30 +11,7 @@ Start
   ^${EPM_LOGGING}
   ^${QOS}
   ^${SOURCE_ROUTE}
-  ^${DOMAIN_LOOKUP}
   ^${ROUTING}
   ^${FORWARD}
+  ^${DOT1X}
   ^${PIM} -> Record
-
-# device-sensor
-# ------
-# NEED MORE RESEARCH FOR:
-# ------
-# table-map policed-dscp
-#  map from  0 to 8
-#  map from  10 to 8
-#  map from  18 to 8
-#  map from  24 to 8
-#  map from  46 to 8
-#  default copy
-# table-map AutoQos-4.0-Trust-Dscp-Table
-#  default copy
-# table-map AutoQos-4.0-Trust-Cos-Table
-#  default copy
-# !
-# !
-# dot1x system-auth-control
-# diagnostic bootup level minimal
-# !
-# redundancy
-#  mode sso
