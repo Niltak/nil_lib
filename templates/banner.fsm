@@ -1,5 +1,7 @@
-Value List BANNER ([\*\^].*)
+Value Required BANNER (banner.+)
+Value List BANNER_DETAILS ([\*\^].*)
 
 Start
   ^banner.+ -> Continue.Record
   ^${BANNER}
+  ^${BANNER_DETAILS}
