@@ -388,7 +388,7 @@ def file_create(
             data_file.writelines(data)
 
 
-def ping(host, attempts='3') -> str | None:
+def ping(host, attempts='3'):
     '''
     '''
     suffix = '-c'
