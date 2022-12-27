@@ -381,7 +381,7 @@ def file_create(
     with open(file_url, 'w') as data_file:
         if file_extension == 'yaml' or file_extension == 'yml':
             yaml.Dumper.ignore_aliases = lambda *args: True
-            data_file.writelines(yaml.dump(data, sort_keys=False))
+            data_file.writelines(yaml.dump(data, sort_keys=False, Dumper=IndentDumper))
         elif file_extension == 'json':
             json.dump(data, data_file, sort_keys=False, indent=1)
         elif file_extension == 'txt' or 'ini':
@@ -422,6 +422,12 @@ def ping_list(host_list, attempts='3') -> list:
             ping_output_list.remove(output)
 
     return ping_output_list
+
+
+# yaml offical fix
+class IndentDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(IndentDumper, self).increase_indent(flow, False)
 
 
 if __name__ == "__main__":
