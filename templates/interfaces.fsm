@@ -5,4 +5,3 @@ Start
   ^\S -> Continue.Record
   ^interface\s+${INTERFACE_NAME}
   ^\s+${INTERFACE_DETAILS}
-  
