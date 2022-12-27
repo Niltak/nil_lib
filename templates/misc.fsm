@@ -5,13 +5,21 @@ Value ROUTING (no ip routing|ip routing)
 Value FORWARD (ip forward-.+)
 Value DOT1X (dot1x.+)
 Value PIM (ip pim .+)
+Value BOOTP (ip bootp.+|no ip bootp.+)
+Value SUBSCRIBER (subscriber.+)
+Value MULTILINK (multilink.+)
+Value PLATFORM (no platform.+|platform.+)
 
 
 Start
-  ^${EPM_LOGGING}
-  ^${QOS}
-  ^${SOURCE_ROUTE}
-  ^${ROUTING}
-  ^${FORWARD}
-  ^${DOT1X}
+  ^${EPM_LOGGING} -> Record
+  ^${QOS} -> Record
+  ^${SOURCE_ROUTE} -> Record
+  ^${ROUTING} -> Record
+  ^${FORWARD} -> Record
+  ^${DOT1X} -> Record
   ^${PIM} -> Record
+  ^${BOOTP} -> Record
+  ^${SUBSCRIBER} -> Record
+  ^${MULTILINK} -> Record
+  ^${PLATFORM} -> Record
