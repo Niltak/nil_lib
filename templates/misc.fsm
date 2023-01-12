@@ -9,6 +9,10 @@ Value BOOTP (ip bootp.+|no ip bootp.+)
 Value SUBSCRIBER (subscriber.+)
 Value MULTILINK (multilink.+)
 Value PLATFORM (no platform.+|platform.+)
+Value NAT_LOG (ip nat log.+)
+Value MAC (mac address.+)
+Value LOGIN (login on.+)
+Value UDLD (udld.+)
 
 
 Start
@@ -23,3 +27,7 @@ Start
   ^${SUBSCRIBER} -> Record
   ^${MULTILINK} -> Record
   ^${PLATFORM} -> Record
+  ^${NAT_LOG} -> Record
+  ^${MAC} -> Record
+  ^${LOGIN} -> Record
+  ^${UDLD} -> Record
