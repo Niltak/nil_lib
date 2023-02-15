@@ -352,7 +352,12 @@ def file_loader(file_load, file_lines=None) -> list:
             return TextFSM(file_info)
         else:
             if file_lines:
-                return file_info.readlines()
+                data = file_info.readlines()
+                for line in data[:]:
+                    if line.endswith('\n'):
+                        data.remove(line)
+                        data.append(line[:-1])
+                return data
             return [file_info.read()]
 
 
