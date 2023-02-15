@@ -111,7 +111,7 @@ def switch_send_command(
                         use_textfsm=fsm,
                         textfsm_template=fsm_template,
                         delay_factor=5,
-                        read_timeout=15))
+                        read_timeout=60))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
