@@ -153,6 +153,72 @@ def switch_list_send_command(
     return list(switch_list_output)
 
 
+def switch_send_reload(
+    switch,
+    delay=None,
+    cancel=False) -> dict:
+    '''
+    '''
+    if not delay:
+        command = 'reload'
+    else:
+        command = f'reload in {delay}'
+    try:
+        with switch_connect(switch) as connection:
+            switch_name = connection.find_prompt()[:-1]
+            switch_output = []
+            if not cancel:
+                switch_output.append(
+                    connection.send_command(
+                        command,
+                        expect_string="Proceed with reload",
+                        delay_factor=5,
+                        read_timeout=20))
+                switch_output.append(
+                    connection.send_command(
+                        '\n',
+                        delay_factor=5,
+                        read_timeout=20))
+            if cancel:
+                switch_output.append(
+                    connection.send_command(
+                        'reload cancel',
+                        delay_factor=5,
+                        read_timeout=20))
+    except AttributeError:
+        logging.warning(f"Could not connect to {switch['host']}")
+        return {'name': False, 'output': switch['host']}
+    except netmiko.exceptions.ReadTimeout:
+        logging.warning(f"Host failed {switch['host']}")
+        return {'name': False, 'output': switch['host']}
+
+    return {
+        'name': switch_name,
+        'host': switch['host'],
+        'output': switch_output,
+        'device_type': switch['device_type']
+    }
+
+
+def switch_list_send_reload(
+    switch_list,
+    delay=None,
+    cancel=False) -> list:
+    '''
+    '''
+    if not isinstance(switch_list, list):
+        switch_list = [switch_list]
+
+    with ThreadPoolExecutor(max_workers=24) as pool:
+        switch_list_output = pool.map(
+            switch_send_reload,
+            switch_list,
+            [delay] * len(switch_list),
+            [cancel] * len(switch_list))
+
+    return list(switch_list_output)
+
+
 def switch_config_file(switch, config_file) -> dict:
     '''
     Uses switch connection to send a configuration file.
