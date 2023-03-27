@@ -94,7 +94,8 @@ def switch_send_command(
     switch,
     command_list,
     fsm=False,
-    fsm_template=None) -> dict:
+    fsm_template=None,
+    read_timeout=20) -> dict:
     '''
     Uses switch connection object to send list of commands. Can use textFSM.
     '''
@@ -111,7 +112,7 @@ def switch_send_command(
                         use_textfsm=fsm,
                         textfsm_template=fsm_template,
                         delay_factor=5,
-                        read_timeout=15))
+                        read_timeout=read_timeout))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
@@ -132,7 +133,8 @@ def switch_list_send_command(
     switch_list,
     command_list,
     fsm=False,
-    fsm_template=None) -> list:
+    fsm_template=None,
+    read_timeout=20) -> list:
     '''
     Send a list of commands to a list of switches. Can use textFSM.
     '''
@@ -143,12 +145,14 @@ def switch_list_send_command(
             fsm_template += '.fsm'
 
     with ThreadPoolExecutor(max_workers=24) as pool:
+        repeat = len(switch_list)
         switch_list_output = pool.map(
             switch_send_command,
             switch_list,
-            [command_list] * len(switch_list),
-            [fsm] * len(switch_list),
-            [fsm_template] * len(switch_list))
+            [command_list] * repeat,
+            [fsm] * repeat,
+            [fsm_template] * repeat,
+            [read_timeout] * repeat)
 
     return list(switch_list_output)
 
