@@ -414,6 +414,7 @@ def file_loader(file_load, file_lines=None) -> list:
     Can load yaml, json, textFSM, or txt~ files.
     '''
     with open(file_load, 'r') as file_info:
+        debug_info = os.getcwd()
         if file_load.endswith('yaml') or file_load.endswith('yml'):
             return yaml.load(file_info, Loader=yaml.CBaseLoader)
         elif file_load.endswith('json'):
