@@ -13,6 +13,7 @@ Value NAT_LOG (ip nat log.+)
 Value MAC (mac address.+)
 Value LOGIN (login on.+)
 Value UDLD (udld.+)
+Value VSTACK (no vstack)
 
 
 Start
@@ -31,3 +32,4 @@ Start
   ^${MAC} -> Record
   ^${LOGIN} -> Record
   ^${UDLD} -> Record
+  ^${VSTACK} -> Record
