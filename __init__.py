@@ -19,9 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def verify_pwd(
-    user,
-    test_switch_ip='10.242.242.151',
-    pwd=None) -> str:
+    user, pwd=None, test_switch_ip='10.242.242.151') -> str:
     '''
     Verifies username and password. Outputs password.
     '''
@@ -32,12 +30,11 @@ def verify_pwd(
         'device_type': 'cisco_ios',
         'host': test_switch_ip,
         'username': user,
-        'password': pwd
-    }
+        'password': pwd}
 
     try:
         with netmiko.ConnectHandler(**target_test_switch):
-            pass
+            return pwd
     except netmiko.NetMikoAuthenticationException:
         logging.error('Failed Password!')
         exit()
@@ -47,8 +44,6 @@ def verify_pwd(
     except Exception:
         logging.error('Something went wrong with the test password!')
         exit()
-
-    return pwd
 
 
 def switch_connect(switch):
