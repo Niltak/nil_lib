@@ -19,9 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def verify_pwd(
-    user,
-    test_switch_ip='10.242.242.151',
-    pwd=None) -> str:
+    user, pwd=None, test_switch_ip='10.242.242.151') -> str:
     '''
     Verifies username and password. Outputs password.
     '''
@@ -32,8 +30,7 @@ def verify_pwd(
         'device_type': 'cisco_ios',
         'host': test_switch_ip,
         'username': user,
-        'password': pwd
-    }
+        'password': pwd}
 
     try:
         with netmiko.ConnectHandler(**target_test_switch):
@@ -91,11 +88,7 @@ def switch_connect(switch):
 
 
 def switch_send_command(
-    switch,
-    command_list,
-    fsm=False,
-    fsm_template=None,
-    read_timeout=20) -> dict:
+    switch, command_list, fsm=False, fsm_template=None, read_timeout=20) -> dict:
     '''
     Uses switch connection object to send list of commands. Can use textFSM.
     '''
@@ -108,11 +101,9 @@ def switch_send_command(
             for command in command_list:
                 switch_output.append(
                     connection.send_command(
-                        command,
-                        use_textfsm=fsm,
+                        command, use_textfsm=fsm,
                         textfsm_template=fsm_template,
-                        delay_factor=5,
-                        read_timeout=read_timeout))
+                        delay_factor=5, read_timeout=read_timeout))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
@@ -125,16 +116,11 @@ def switch_send_command(
         'name': switch_name,
         'host': switch['host'],
         'output': switch_output,
-        'device_type': switch['device_type']
-    }
+        'device_type': switch['device_type']}
 
 
 def switch_list_send_command(
-    switch_list,
-    command_list,
-    fsm=False,
-    fsm_template=None,
-    read_timeout=20) -> list:
+    switch_list, command_list, fsm=False, fsm_template=None, read_timeout=20) -> list:
     '''
     Send a list of commands to a list of switches. Can use textFSM.
     '''
@@ -231,13 +217,13 @@ def switch_config_file(switch, config_file) -> dict:
     try:
         with switch_connect(switch) as connection:
             switch_output = connection.send_config_from_file(config_file)
-            switch_output_diff = f"{connection.find_prompt()}\n"
+            switch_output_diff = f'{connection.find_prompt()}\n'
             if switch['device_type'] == 'cisco_nxos':
                 sh_diff = 'sh run diff'
             else:
                 sh_diff = 'sh archive config differences'
-            switch_output_diff += f"{connection.send_command(sh_diff)}"
-            switch_output += f"{connection.save_config()}\n\n"
+            switch_output_diff += f'{connection.send_command(sh_diff)}'
+            switch_output += f'{connection.save_config()}\n\n'
     except AttributeError:
         return {'name': False, 'output': switch['host']}
     except FileNotFoundError:
@@ -257,14 +243,11 @@ def switch_config_file(switch, config_file) -> dict:
         'name': switch['host'],
         'output': switch_output,
         'diff': switch_output_diff,
-        'device_type': switch['device_type']
-    }
+        'device_type': switch['device_type']}
 
 
 def switch_list_config_file(
-    switch_list,
-    config_file,
-    log_file_name) -> None:
+    switch_list, config_file, log_file_name) -> None:
     '''
     Send configuration file to a list of switches.
     Creates log files for the command outputs and configuration differences.
@@ -274,10 +257,8 @@ def switch_list_config_file(
 
     with ThreadPoolExecutor(max_workers=24) as pool:
         switch_list_output = pool.map(
-            switch_config_file,
-            switch_list,
-            [config_file] * len(switch_list)
-        )
+            switch_config_file, switch_list,
+            [config_file] * len(switch_list))
 
     switch_list_log, switch_list_diff, switch_errored = [], [], []
     for switch_output in switch_list_output:
@@ -302,18 +283,14 @@ def switch_list_config_file(
         trim_diff = re.sub(old_cert_regex, '', trim_diff)
         switch_list_diff[index] = '\n' + trim_diff
 
-    log_file_name = date.today().strftime("%m-%d-%Y") + '--' + log_file_name
-    log_file_name_diff = log_file_name + '(diff)'
+    log_file_name = f"{date.today().strftime('%m-%d-%Y')}--{log_file_name}"
 
     file_create(log_file_name, 'logs/network/', switch_list_log)
-    file_create(log_file_name_diff, 'logs/network/', switch_list_diff)
+    file_create(f'{log_file_name} (diff)', 'logs/network/', switch_list_diff)
 
 
 def format_switch_list(
-    switch_list,
-    user,
-    pwd=None,
-    device_type='autodetect') -> list:
+    switch_list, user, pwd=None, device_type='autodetect') -> list:
     '''
     Formats a list of switches based on IPs or a dict of host and device type.
     Returns a list of switches ready for connection functions.
@@ -328,8 +305,7 @@ def format_switch_list(
     switch_template = {
         'username': user,
         'password': pwd,
-        'fast_cli': False
-    }
+        'fast_cli': False}
 
     for index, switch in enumerate(switch_list):
         switch_format = switch_template.copy()
@@ -347,17 +323,14 @@ def format_switch_list(
 
 
 def format_site_yaml(
-    site_yaml,
-    user,
-    switch_group=None,
-    switch_location=None,
-    switch_role=None,
-    switch_names=None,
-    pwd=None) -> list:
+    site_yaml, user, pwd=None,
+    switch_group=None, switch_location=None,
+    switch_role=None, switch_names=None) -> list:
     '''
     Formats site yaml file into list of switches ready for connection functions.
     Can search site yaml for certain keys. (Groups, Location, Roles, and Hostnames)
     '''
+    # TODO: Need to refactor
     if not pwd:
         pwd = verify_pwd(user)
     if switch_names:
@@ -387,9 +360,7 @@ def format_site_yaml(
 
 
 def search_within_list(
-    search_value,
-    search_list,
-    search_key):
+    search_value, search_list, search_key):
     '''
     Search list of dictionaries for a value within a certain key.
     '''
@@ -423,16 +394,18 @@ def file_loader(file_load, file_lines=None) -> list:
             return TextFSM(file_info)
         else:
             if file_lines:
-                return file_info.readlines()
+                data = file_info.readlines()
+                for line in data[:]:
+                    if line.endswith('\n'):
+                        data.remove(line)
+                        data.append(line[:-1])
+                return data
             return [file_info.read()]
 
 
 def file_create(
-    file_name,
-    file_dir,
-    data,
-    file_extension='txt',
-    override=False) -> None:
+    file_name, file_dir, data,
+    file_extension='txt', override=False) -> None:
     '''
     Creates file. Will create folder path as needed.
     Can create yaml, json, or txt~ files.
