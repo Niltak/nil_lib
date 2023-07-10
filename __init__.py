@@ -144,9 +144,7 @@ def switch_list_send_command(
 
 
 def switch_send_reload(
-    switch,
-    delay=None,
-    cancel=False) -> dict:
+    switch, delay=None, cancel=False) -> dict:
     '''
     '''
     if not delay:
@@ -160,21 +158,15 @@ def switch_send_reload(
             if not cancel:
                 switch_output.append(
                     connection.send_command(
-                        command,
-                        expect_string="Proceed with reload",
-                        delay_factor=5,
-                        read_timeout=20))
+                        command, expect_string="Proceed with reload",
+                        delay_factor=5, read_timeout=20))
                 switch_output.append(
                     connection.send_command(
-                        '\n',
-                        delay_factor=5,
-                        read_timeout=20))
+                        '\n', delay_factor=5, read_timeout=20))
             if cancel:
                 switch_output.append(
                     connection.send_command(
-                        'reload cancel',
-                        delay_factor=5,
-                        read_timeout=20))
+                        'reload cancel', delay_factor=5, read_timeout=20))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
@@ -186,14 +178,11 @@ def switch_send_reload(
         'name': switch_name,
         'host': switch['host'],
         'output': switch_output,
-        'device_type': switch['device_type']
-    }
+        'device_type': switch['device_type']}
 
 
 def switch_list_send_reload(
-    switch_list,
-    delay=None,
-    cancel=False) -> list:
+    switch_list, delay=None, cancel=False) -> list:
     '''
     '''
     if not isinstance(switch_list, list):
