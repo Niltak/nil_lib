@@ -1,0 +1,7 @@
+Value Required TUNNEL (interface Tunnel.+)
+Value List TUNNEL_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${TUNNEL}
+  ^\s+${TUNNEL_DETAILS}

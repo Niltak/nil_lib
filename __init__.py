@@ -88,7 +88,7 @@ def switch_connect(switch):
 
 
 def switch_send_command(
-    switch, command_list, fsm=False, fsm_template=None) -> dict:
+    switch, command_list, fsm=False, fsm_template=None, read_timeout=20) -> dict:
     '''
     Uses switch connection object to send list of commands. Can use textFSM.
     '''
@@ -103,7 +103,7 @@ def switch_send_command(
                     connection.send_command(
                         command, use_textfsm=fsm,
                         textfsm_template=fsm_template,
-                        delay_factor=5, read_timeout=60))
+                        delay_factor=5, read_timeout=read_timeout))
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
         return {'name': False, 'output': switch['host']}
@@ -120,7 +120,7 @@ def switch_send_command(
 
 
 def switch_list_send_command(
-    switch_list, command_list, fsm=False, fsm_template=None) -> list:
+    switch_list, command_list, fsm=False, fsm_template=None, read_timeout=20) -> list:
     '''
     Send a list of commands to a list of switches. Can use textFSM.
     '''
@@ -131,12 +131,80 @@ def switch_list_send_command(
             fsm_template += '.fsm'
 
     with ThreadPoolExecutor(max_workers=24) as pool:
+        repeat = len(switch_list)
         switch_list_output = pool.map(
             switch_send_command,
             switch_list,
-            [command_list] * len(switch_list),
-            [fsm] * len(switch_list),
-            [fsm_template] * len(switch_list))
+            [command_list] * repeat,
+            [fsm] * repeat,
+            [fsm_template] * repeat,
+            [read_timeout] * repeat)
+
+    return list(switch_list_output)
+
+
+def switch_send_reload(
+    switch,
+    delay=None,
+    cancel=False) -> dict:
+    '''
+    '''
+    if not delay:
+        command = 'reload'
+    else:
+        command = f'reload in {delay}'
+    try:
+        with switch_connect(switch) as connection:
+            switch_name = connection.find_prompt()[:-1]
+            switch_output = []
+            if not cancel:
+                switch_output.append(
+                    connection.send_command(
+                        command,
+                        expect_string="Proceed with reload",
+                        delay_factor=5,
+                        read_timeout=20))
+                switch_output.append(
+                    connection.send_command(
+                        '\n',
+                        delay_factor=5,
+                        read_timeout=20))
+            if cancel:
+                switch_output.append(
+                    connection.send_command(
+                        'reload cancel',
+                        delay_factor=5,
+                        read_timeout=20))
+    except AttributeError:
+        logging.warning(f"Could not connect to {switch['host']}")
+        return {'name': False, 'output': switch['host']}
+    except netmiko.exceptions.ReadTimeout:
+        logging.warning(f"Host failed {switch['host']}")
+        return {'name': False, 'output': switch['host']}
+
+    return {
+        'name': switch_name,
+        'host': switch['host'],
+        'output': switch_output,
+        'device_type': switch['device_type']
+    }
+
+
+def switch_list_send_reload(
+    switch_list,
+    delay=None,
+    cancel=False) -> list:
+    '''
+    '''
+    if not isinstance(switch_list, list):
+        switch_list = [switch_list]
+
+    with ThreadPoolExecutor(max_workers=24) as pool:
+        switch_list_output = pool.map(
+            switch_send_reload,
+            switch_list,
+            [delay] * len(switch_list),
+            [cancel] * len(switch_list))
 
     return list(switch_list_output)
 
@@ -317,6 +385,7 @@ def file_loader(file_load, file_lines=None) -> list:
     Can load yaml, json, textFSM, or txt~ files.
     '''
     with open(file_load, 'r') as file_info:
+        debug_info = os.getcwd()
         if file_load.endswith('yaml') or file_load.endswith('yml'):
             return yaml.load(file_info, Loader=yaml.CBaseLoader)
         elif file_load.endswith('json'):
@@ -356,14 +425,14 @@ def file_create(
     with open(file_url, 'w') as data_file:
         if file_extension == 'yaml' or file_extension == 'yml':
             yaml.Dumper.ignore_aliases = lambda *args: True
-            data_file.writelines(yaml.dump(data, sort_keys=False))
+            data_file.writelines(yaml.dump(data, sort_keys=False, Dumper=IndentDumper))
         elif file_extension == 'json':
             json.dump(data, data_file, sort_keys=False, indent=1)
         elif file_extension == 'txt' or 'ini':
             data_file.writelines(data)
 
 
-def ping(host, attempts='3') -> str | None:
+def ping(host, attempts='3'):
     '''
     '''
     suffix = '-c'
@@ -397,6 +466,12 @@ def ping_list(host_list, attempts='3') -> list:
             ping_output_list.remove(output)
 
     return ping_output_list
+
+
+# yaml offical fix
+class IndentDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(IndentDumper, self).increase_indent(flow, False)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,0 @@
-Value TACACS (tacacs.server timeout .+)
-
-Start
-  ^${TACACS} -> Record
