@@ -13,3 +13,4 @@ run_*
 test_*
 
 # one off
+nil_lib/templates/.baseline/*

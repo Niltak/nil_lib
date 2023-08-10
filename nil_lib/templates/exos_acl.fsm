@@ -1,0 +1,21 @@
+Value Required ACL_NAME (.+)
+Value SOURCE (.+)
+Value PROTOCOL (.+)
+Value PORT (.+)
+Value DESTINATION (.+)
+Value List THEN_DETAILS (.+)
+
+Start
+  ^entry -> Continue.Record
+  ^entry\s+${ACL_NAME}\s*{\s*if.*{\s*source\S+\s+${SOURCE};\s+destination-address\s+${DESTINATION}\s*;\s+protocol\s+${PROTOCOL}\s*;\s+destination-port\s+${PORT}\s*;\s*}\s*then\s*{\s*\s+${THEN_DETAILS}\s*;
+  ^entry\s+${ACL_NAME}\s*{\s*if.*{\s*source\S+\s+${SOURCE};\s+destination-address\s+${DESTINATION}\s*;\s*}\s*then\s*{\s*\s+${THEN_DETAILS}\s*;
+  ^entry\s+${ACL_NAME}\s*{
+  ^\s*if.*{
+  ^\s+protocol\s+${PROTOCOL}\s*;
+  ^\s+TCP\S+\s+${PORT}\s*;
+  ^\s+source\S+\s${SOURCE}\s*;
+  ^\s+destination-ad\S+\s${DESTINATION}\s*;
+  ^}
+  ^\s*then\s*{
+  ^\s+${THEN_DETAILS}\s*;
+  
