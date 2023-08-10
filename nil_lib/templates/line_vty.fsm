@@ -1,0 +1,8 @@
+Value Required LINE_NAME (line.+)
+Value List LINE_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${LINE_NAME}
+  ^\s+${LINE_DETAILS}
+  

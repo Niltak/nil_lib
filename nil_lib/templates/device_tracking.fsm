@@ -1,0 +1,7 @@
+Value Required DEVICE_TRACKING (device-tracking .+)
+Value List TRACKING (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${DEVICE_TRACKING}
+  ^\s+${TRACKING}
