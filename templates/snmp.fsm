@@ -1,4 +1,0 @@
-Value SNMP (snmp-server .+)
-
-Start
-  ^${SNMP} -> Record

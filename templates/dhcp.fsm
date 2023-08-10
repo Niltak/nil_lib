@@ -1,4 +1,0 @@
-Value DHCP (ip dhcp.*|no ip dhcp.*)
-
-Start
-  ^${DHCP} -> Record

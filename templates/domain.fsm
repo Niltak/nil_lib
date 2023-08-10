@@ -1,4 +1,0 @@
-Value DOMAIN (ip domain.+|no ip domain.+)
-
-Start
-  ^${DOMAIN} -> Record

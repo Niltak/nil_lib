@@ -1,5 +1,0 @@
-Value DNS (ip name.server.+)
-
-Start
-  ^${DNS} -> Record
-  

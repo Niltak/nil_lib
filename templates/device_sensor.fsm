@@ -1,4 +1,0 @@
-Value DEVICE_SENSOR (device-sensor.+)
-
-Start
-  ^${DEVICE_SENSOR} -> Record

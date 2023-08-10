@@ -1,7 +1,0 @@
-Value Required EIGRP (router eigrp.+)
-Value List EIGRP_DETAILS (.+)
-
-Start
-  ^\S -> Continue.Record
-  ^${EIGRP}
-  ^\s+${EIGRP_DETAILS}
