@@ -1,4 +1,0 @@
-Value TFTP (ip tftp.+)
-
-Start
-  ^${TFTP} -> Record

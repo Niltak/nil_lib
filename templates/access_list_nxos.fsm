@@ -1,8 +1,0 @@
-Value Required ACCESS_NAME (\S+)
-Value List ACCESS_LIST (.+)
-
-
-Start
-  ^\S -> Continue.Record
-  ^ip access.list\s+${ACCESS_NAME}
-  ^\s+${ACCESS_LIST}

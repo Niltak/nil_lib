@@ -1,4 +1,0 @@
-Value VTP (vtp .+)
-
-Start
-  ^${VTP} -> Record

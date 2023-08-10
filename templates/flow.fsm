@@ -1,7 +1,0 @@
-Value Required FLOW (flow.+)
-Value List FLOW_DETAILS (.+)
-
-Start
-  ^\S -> Continue.Record
-  ^${FLOW}
-  ^\s+${FLOW_DETAILS}

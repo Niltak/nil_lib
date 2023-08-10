@@ -1,4 +1,0 @@
-Value FTP (ip ftp .+)
-
-Start
-  ^${FTP} -> Record

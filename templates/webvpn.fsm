@@ -1,7 +1,0 @@
-Value Required WEBVPN (webvpn)
-Value List WEBVPN_DETAILS (.+)
-
-Start
-  ^\S -> Continue.Record
-  ^${WEBVPN}
-  ^\s+${WEBVPN_DETAILS}

@@ -1,5 +1,0 @@
-Value USERNAME ([U|u]sername .+|enable .+)
-
-Start
-  ^${USERNAME} -> Record
-  

@@ -1,4 +1,0 @@
-Value ROUTE (ip route .+)
-
-Start
-  ^${ROUTE} -> Record
