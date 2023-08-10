@@ -1,5 +1,0 @@
-Value SNMP_COMMUNITY (snmp-server community .+)
-
-Start
-  ^${SNMP_COMMUNITY} -> Record
-  

@@ -1,5 +1,0 @@
-Value Required NTP (ntp .+)
-
-Start
-  ^${NTP} -> Record
-  

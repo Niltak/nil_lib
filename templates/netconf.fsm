@@ -1,4 +1,0 @@
-Value NETCONF (netconf.*|restconf.*|no netconf.*|no restconf.*)
-
-Start
-  ^${NETCONF} -> Record

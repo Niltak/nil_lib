@@ -1,8 +1,0 @@
-Value PORT (\d+)
-Value Required INTERFACE ([^\)]+)
-Value BPDU_SENT (\d+)
-Value BPDU_RECIEVE (\d+)
-
-Start
-  ^\s+Port\s+${PORT}\s+\(${INTERFACE}\).+
-  ^\s+BPDU:\s+sent\s+${BPDU_SENT},\s+received\s+${BPDU_RECIEVE} -> Record

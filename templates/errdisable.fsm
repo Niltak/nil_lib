@@ -1,4 +1,0 @@
-Value ERRDISABLE (errdisable .+|no errdisable .+)
-
-Start
-  ^${ERRDISABLE} -> Record

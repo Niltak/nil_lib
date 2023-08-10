@@ -1,4 +1,0 @@
-Value SSH (ip ssh .+)
-
-Start
-  ^${SSH} -> Record
