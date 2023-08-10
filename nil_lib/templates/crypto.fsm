@@ -1,0 +1,7 @@
+Value Required CRYPTO (crypto isakmp.+|crypto ipsec.+)
+Value List CRYPTO_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${CRYPTO}
+  ^\s+${CRYPTO_DETAILS}

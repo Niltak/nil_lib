@@ -1,0 +1,7 @@
+Value Required SLA (ip sla .+|track \d+ ip sla .+)
+Value List SLA_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${SLA}
+  ^\s+${SLA_DETAILS}
