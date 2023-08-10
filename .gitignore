@@ -1,17 +1,7 @@
 #defaults
-# .gitignore
+.gitignore
 __pycache__/
 .vscode/
-
-# Folders
-configs/audit/**
-configs/command_list/**
-configs/switch_list/**
-configs/*.yml
-site_info/**
-logs/**
-test_package*
-testing*
 
 # Global
 aa_global.py

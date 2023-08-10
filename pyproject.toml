@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel", ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nil_lib"
+version = "2.1"
+description = "Python libary of switch and various commands"
+readme = "README.md"
+authors = [{ name = "Katlin Sampson", email = "katlinvsampson@gmail.com" }]
+license = { file = "LICENSE.md" }
+repository = "https://github.com/Niltak/nil_lib"
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["netmiko", "network", "DevNet", "NetOps"]
+dependencies = [
+    "netmiko>=3.4.0",
+    "pyyaml",
+    "textfsm",
+]
+requires-python = ">=3.9"
+
+[project.urls]
+"Homepage" = "https://github.com/Niltak/nil_lib"
+"Bug Tracker" = "https://github.com/Niltak/nil_lib/issues"
+
+[project.scripts]
+nil_lib = "nil_lib.__init__"

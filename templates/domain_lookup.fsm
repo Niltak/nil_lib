@@ -1,5 +1,0 @@
-Value DOMAIN_LOOKUP (no ip domain-look.+|ip domain-look.+)
-
-Start
-  ^${DOMAIN_LOOKUP} -> Record
-  

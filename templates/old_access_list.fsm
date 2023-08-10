@@ -1,4 +1,0 @@
-Value ACCESS_LIST (access.list \d+ .+)
-
-Start
-  ^${ACCESS_LIST} -> Record

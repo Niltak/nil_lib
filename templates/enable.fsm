@@ -1,4 +1,0 @@
-Value ENABLE (enable .+)
-
-Start
-  ^${ENABLE} -> Record

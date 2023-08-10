@@ -1,4 +1,0 @@
-Value Required AAA_INFO (aaa .+)
-
-Start
-  ^${AAA_INFO} -> Record
