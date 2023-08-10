@@ -1,0 +1,7 @@
+Value Required LOOPBACK (interface Loopback.+)
+Value List LOOPBACK_DETAILS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${LOOPBACK}
+  ^\s+${LOOPBACK_DETAILS}

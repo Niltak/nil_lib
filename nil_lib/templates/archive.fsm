@@ -1,0 +1,8 @@
+Value Required ARCHIVE (archive)
+Value List ARCHIVE_LIST (.+)
+
+
+Start
+  ^\S -> Continue.Record
+  ^${ARCHIVE}
+  ^\s+${ARCHIVE_LIST}

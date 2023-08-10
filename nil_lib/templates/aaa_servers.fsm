@@ -1,0 +1,7 @@
+Value Required AAA_GROUP (aaa group server .+|aaa server.+)
+Value List AAA_SERVERS (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^${AAA_GROUP}
+  ^\s+${AAA_SERVERS}
