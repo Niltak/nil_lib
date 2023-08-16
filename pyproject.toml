@@ -9,7 +9,6 @@ description = "Python libary of switch and various commands"
 readme = "README.md"
 authors = [{ name = "Katlin Sampson", email = "katlinvsampson@gmail.com" }]
 license = { file = "LICENSE.md" }
-repository = "https://github.com/Niltak/nil_lib"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
