@@ -2,6 +2,8 @@
 .gitignore
 __pycache__/
 .vscode/
+dist/*
+nil_lib.*
 
 # Global
 aa_global.py
