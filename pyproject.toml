@@ -26,4 +26,4 @@ requires-python = ">=3.9"
 "Bug Tracker" = "https://github.com/Niltak/nil_lib/issues"
 
 [project.scripts]
-nil_lib = "nil_lib.__init__"
+nil_lib = "nil_lib:__init__.py"
