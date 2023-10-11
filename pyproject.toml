@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nil_lib"
-version = "2.1"
+version = "2.1.1"
 description = "Python libary of switch and various commands"
 readme = "README.md"
 authors = [{ name = "Katlin Sampson", email = "katlinvsampson@gmail.com" }]
