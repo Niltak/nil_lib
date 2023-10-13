@@ -1,4 +1,4 @@
 include *.md
 include requirements.txt
-recursive-include nil_lib/*
-recursive-include tests/*
+recursive-include nil_lib *.fsm
+recursive-include tests *
