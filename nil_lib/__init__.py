@@ -1,6 +1,4 @@
 #! /user/bin/env python3 -i
-
-# Kat Lib Commands v2
 # Developed by Katlin Sampson
 
 import os
@@ -455,6 +453,13 @@ def ping_list(host_list, attempts='3') -> list:
             ping_output_list.remove(output)
 
     return ping_output_list
+
+
+def templates_folder():
+    '''
+    Locate module path for the template folder
+    '''
+    return f'{__file__.split("__")[0]}templates'
 
 
 # yaml offical fix
