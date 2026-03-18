@@ -1,0 +1,10 @@
+Value Required USERNAME (\S+)
+Value Required PASSWORD (\S+)
+Value Required VPNCUSTOMER (\S+)
+Value Required VPNLOGINS (\S+)
+
+Start
+  ^username ${USERNAME} password ${PASSWORD} .+
+  ^username ${USERNAME} attributes
+  ^\s+vpn-group-policy ${VPNCUSTOMER}
+  ^\s+vpn-simultaneous-logins ${VPNLOGINS} -> Record

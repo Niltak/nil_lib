@@ -1,0 +1,9 @@
+Value Required NAME (.+)
+Value List OBJECT_LIST (.+)
+
+
+Start
+  ^\S -> Continue.Record
+  ^object network\s+${NAME}
+  ^\s+${OBJECT_LIST}
+  

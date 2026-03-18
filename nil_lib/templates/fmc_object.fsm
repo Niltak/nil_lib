@@ -1,0 +1,5 @@
+Value NAME (\S+)
+
+
+Start
+  ^object-group network ${NAME} -> Record

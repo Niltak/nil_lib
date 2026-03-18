@@ -1,0 +1,7 @@
+Value Required ID (\d+)
+Value List Networks (.+)
+
+Start
+  ^\S -> Continue.Record
+  ^router bgp ${ID}
+  ^\s+network ${Networks}

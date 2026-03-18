@@ -1,0 +1,4 @@
+Value LICENSE (no license .+|license .+)
+
+Start
+  ^${LICENSE} -> Record

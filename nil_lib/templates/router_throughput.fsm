@@ -1,0 +1,4 @@
+Value TP (platform hardware throughput .+)
+
+Start
+  ^${TP} -> Record

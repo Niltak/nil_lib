@@ -1,0 +1,8 @@
+Value Required NAME (.+)
+Value List GROUP_LIST (.+)
+
+
+Start
+  ^\S -> Continue.Record
+  ^tunnel\-group\s+${NAME}\s+webvpn\-attributes
+  ^\s+${GROUP_LIST}
