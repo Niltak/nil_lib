@@ -1,4 +1,6 @@
 #! /user/bin/env python3 -i
+
+# Kat Lib Commands v2
 # Developed by Katlin Sampson
 
 import os
@@ -12,14 +14,25 @@ from datetime import date
 from textfsm import TextFSM
 from getpass import getpass
 from platform import system
-from subprocess import run, DEVNULL
+from subprocess import call, DEVNULL
 from concurrent.futures import ThreadPoolExecutor
 
 
 def verify_pwd(
     user, pwd=None, test_switch_ip='10.242.242.151') -> str:
     '''
-    Verifies username and password. Outputs password.
+    Verifies username and password against a test switch via SSH.
+
+    Args:
+        user (str): Username for authentication
+        pwd (str, optional): Password. Prompts if not provided.
+        test_switch_ip (str): IP of test switch for validation (default: 10.242.242.151)
+
+    Returns:
+        str: Valid password if authentication succeeds
+
+    Raises:
+        SystemExit: On authentication failure or connection issues
     '''
     if not pwd:
         pwd = getpass()
@@ -48,7 +61,13 @@ def verify_pwd(
 
 def switch_connect(switch):
     '''
-    Connects to a switch. Returns switch connection or error dict.
+    Establishes SSH connection to a network device.
+
+    Args:
+        switch (dict): Device config with host, username, password, device_type
+
+    Returns:
+        Connection object on success, error dict on failure
     '''
     error = {'name': False, 'output': switch['host']}
 
@@ -86,9 +105,21 @@ def switch_connect(switch):
 
 
 def switch_send_command(
-    switch, command_list, fsm=False, fsm_template=None, read_timeout=20) -> dict:
+    switch, command_list, fsm=False, fsm_template=None,
+    expect_string=None, read_timeout=20) -> dict:
     '''
-    Uses switch connection object to send list of commands. Can use textFSM.
+    Sends one or more commands to a device and retrieves output.
+
+    Args:
+        switch (dict): Device configuration
+        command_list (str/list): Single command or list of commands
+        fsm (bool): Use TextFSM parsing
+        fsm_template (str): Path to FSM template file
+        expect_string (str): String to expect in output
+        read_timeout (int): Timeout in seconds (default: 20)
+
+    Returns:
+        dict: Contains device name, host, command output, device type
     '''
     if not isinstance(command_list, list):
         command_list = [command_list]
@@ -101,9 +132,21 @@ def switch_send_command(
                     connection.send_command(
                         command, use_textfsm=fsm,
                         textfsm_template=fsm_template,
+                        expect_string=expect_string,
                         delay_factor=5, read_timeout=read_timeout))
+                if expect_string:
+                    try:
+                        switch_output.append(
+                            connection.send_command(
+                                '\n', delay_factor=5, read_timeout=20))
+                    except:
+                        pass
+
     except AttributeError:
         logging.warning(f"Could not connect to {switch['host']}")
+        return {'name': False, 'output': switch['host']}
+    except netmiko.ReadTimeout:
+        logging.warning(f"{switch['host']} timed out")
         return {'name': False, 'output': switch['host']}
 
     if fsm and isinstance(switch_output, list):
@@ -118,10 +161,23 @@ def switch_send_command(
 
 
 def switch_list_send_command(
-    switch_list, command_list, fsm=False, fsm_template=None, read_timeout=20) -> list:
+    switch_list, command_list, fsm=False, fsm_template=None,
+    expect_string=None, read_timeout=20) -> list:
     '''
-    Send a list of commands to a list of switches. Can use textFSM.
+    Sends commands to multiple devices in parallel (max 24 workers).
+
+    Args:
+        switch_list (list): List of device configurations
+        command_list (str/list): Commands to send
+        fsm (bool): Use TextFSM parsing
+        fsm_template (str): FSM template file
+        expect_string (str): Expected output string
+        read_timeout (int): Timeout in seconds
+
+    Returns:
+        list: Results from each device
     '''
+
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
     if fsm_template:
@@ -136,6 +192,7 @@ def switch_list_send_command(
             [command_list] * repeat,
             [fsm] * repeat,
             [fsm_template] * repeat,
+            [expect_string] * repeat,
             [read_timeout] * repeat)
 
     return list(switch_list_output)
@@ -144,6 +201,15 @@ def switch_list_send_command(
 def switch_send_reload(
     switch, delay=None, cancel=False) -> dict:
     '''
+    Sends reload command to a device.
+
+    Args:
+        switch (dict): Device configuration
+        delay (int, optional): Delay in minutes before reload
+        cancel (bool): Cancel pending reload if True
+
+    Returns:
+        dict: Device name, host, reload output, device type
     '''
     if not delay:
         command = 'reload'
@@ -182,7 +248,17 @@ def switch_send_reload(
 def switch_list_send_reload(
     switch_list, delay=None, cancel=False) -> list:
     '''
+    Sends reload command to multiple devices in parallel.
+
+    Args:
+        switch_list (list): List of device configurations
+        delay (int, optional): Delay in minutes before reload
+        cancel (bool): Cancel pending reloads
+
+    Returns:
+        list: Results from each device
     '''
+
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
 
@@ -196,21 +272,34 @@ def switch_list_send_reload(
     return list(switch_list_output)
 
 
-def switch_config_file(switch, config_file) -> dict:
+def switch_config_file(switch, configuration, read_timeout=180) -> dict:
     '''
-    Uses switch connection to send a configuration file.
-    Returns the switch output.
+    Applies configuration file or commands to a device and saves.
+
+    Args:
+        switch (dict): Device configuration
+        configuration (str/list): Config file path or list of commands
+        read_timeout (int): Timeout in seconds (default: 180)
+
+    Returns:
+        dict: Device name, output, diff output, device type
     '''
+
     try:
         with switch_connect(switch) as connection:
-            switch_output = connection.send_config_from_file(config_file)
+            if isinstance(configuration, list):
+                switch_output = connection.send_config_set(configuration, read_timeout=read_timeout)
+            else:
+                switch_output = connection.send_config_from_file(configuration, read_timeout=read_timeout)
+
             switch_output_diff = f'{connection.find_prompt()}\n'
             if switch['device_type'] == 'cisco_nxos':
                 sh_diff = 'sh run diff'
             else:
                 sh_diff = 'sh archive config differences'
-            switch_output_diff += f'{connection.send_command(sh_diff)}'
+            switch_output_diff += f'{connection.send_command(sh_diff, read_timeout=60)}'
             switch_output += f'{connection.save_config()}\n\n'
+
     except AttributeError:
         return {'name': False, 'output': switch['host']}
     except FileNotFoundError:
@@ -222,8 +311,8 @@ def switch_config_file(switch, config_file) -> dict:
     except netmiko.NetmikoTimeoutException:
         logging.warning(f"Connection timed out on {switch['host']}")
         return {'name': False, 'output': switch['host']}
-    except Exception:
-        logging.warning(f'catch all was triggered for switch_config_file {Exception}')
+    except Exception as e:
+        logging.warning(f"catch all - {e} for {switch['host']}")
         return {'name': False, 'output': switch['host']}
 
     return {
@@ -236,8 +325,14 @@ def switch_config_file(switch, config_file) -> dict:
 def switch_list_config_file(
     switch_list, config_file, log_file_name) -> None:
     '''
-    Send configuration file to a list of switches.
-    Creates log files for the command outputs and configuration differences.
+    Applies config to multiple devices and logs results with diffs.
+
+    Args:
+        switch_list (list): List of device configurations
+        config_file (str): Path to configuration file
+        log_file_name (str): Base name for output log files
+
+    Output: Creates dated log files in logs/network/
     '''
     if not isinstance(switch_list, list):
         switch_list = [switch_list]
@@ -276,80 +371,100 @@ def switch_list_config_file(
     file_create(f'{log_file_name} (diff)', 'logs/network/', switch_list_diff)
 
 
-def format_switch_list(
-    switch_list, user, pwd=None, device_type='autodetect') -> list:
+def format_device_list(
+    device_list, user, pwd=None, device_type='autodetect') -> list:
     '''
-    Formats a list of switches based on IPs or a dict of host and device type.
-    Returns a list of switches ready for connection functions.
+    Formats a list of devices based on IPs or a dict of host and device type.
+
+    Args:
+        device_list (str/list): IPs or device dicts
+        user (str): Username
+        pwd (str, optional): Password. Prompts if not provided.
+        device_type (str): Device type (default: autodetect)
+
+    Returns:
+        list: Formatted device configs ready for connection
     '''
     if not pwd:
         pwd = verify_pwd(user)
     if isinstance(pwd, bytes):
         pwd = base64.b85decode(pwd).decode('utf-8')
-    if not isinstance(switch_list, list):
-        switch_list = [switch_list]
+    if isinstance(device_list, str):
+        device_list = [device_list]
 
-    switch_template = {
+    device_template = {
         'username': user,
         'password': pwd,
         'fast_cli': False}
 
-    for index, switch in enumerate(switch_list):
-        switch_format = switch_template.copy()
-        if isinstance(switch, dict):
-            switch_format.update(switch)
-            if 'device_type' not in switch_format.keys():
-                switch_format['device_type'] = device_type
+    for index, device in enumerate(device_list):
+        device_format = device_template.copy()
+        if isinstance(device, dict):
+            device_format.update(device)
+            if 'device_type' not in device_format.keys():
+                device_format['device_type'] = device_type
         else:
-            switch_format['device_type'] = device_type
-            switch_format['host'] = switch
+            device_format['device_type'] = device_type
+            device_format['host'] = device
 
-        switch_list[index] = switch_format
+        device_list[index] = device_format
 
-    return switch_list
+    return device_list
 
 
 def format_site_yaml(
-    site_yaml, user, pwd=None,
-    switch_group=None, switch_location=None,
-    switch_role=None, switch_names=None) -> list:
+    site_code, user, pwd=None, filter_group=None, filter_device_type=None,
+    filter_location=None, filter_role=None, filter_names=None) -> list:
     '''
-    Formats site yaml file into list of switches ready for connection functions.
-    Can search site yaml for certain keys. (Groups, Location, Roles, and Hostnames)
+    Formats site yaml file into list of devices ready for connection functions.
+
+    Args:
+        site_code (str): Site code folder name
+        user (str): Username
+        pwd (str, optional): Password
+        filter_group/device_type/location/role/names: Optional filters
+
+    Returns:
+        list: Formatted device configs matching filters
     '''
-    # TODO: Need to refactor
     if not pwd:
         pwd = verify_pwd(user)
-    if switch_names:
-        if not isinstance(switch_names, list):
-            switch_names = [switch_names]
+    if filter_names:
+        if not isinstance(filter_names, list):
+            filter_names = [filter_names]
 
-    if not site_yaml.endswith('.yml'):
-        site_yaml = f'site_info/{site_yaml}/{site_yaml}.yml'
+    device_list = file_loader(
+        f'site_info/{site_code}/{site_code}.yml')['Switchlist']
 
-    switch_list = file_loader(site_yaml)['Switchlist']
+    results = []
+    for device in device_list:
+        searched_group = True if not filter_group else filter_group in device['groups']
+        searched_location = True if not filter_location else filter_location == device['data']['location']
+        searched_role = True if not filter_role else filter_role == device['data']['role']
+        searched_name = True if not filter_names else device['hostname'] in filter_names
+        searched_type = True if not filter_device_type else filter_device_type == device['data']['device_type']
 
-    switch_list_results = []
-    for switch in switch_list:
-        searched_group = True if not switch_group else switch_group in switch['groups']
-        searched_location = True if not switch_location else switch_location == switch['data']['location']
-        searched_role = True if not switch_role else switch_role == switch['data']['role']
-        searched_name = True if not switch_names else switch['hostname'] in switch_names
+        if (searched_group and searched_location and
+            searched_role and searched_name and searched_type):
+            results.append({
+                'host': device['host'],
+                'device_type': device['data']['device_type']})
 
-        if searched_group and searched_location and searched_role and searched_name:
-            switch_format = {
-                'host': switch['host'],
-                'device_type': switch['data']['device_type']
-            }
-            switch_list_results.append(switch_format)
-
-    return format_switch_list(switch_list_results, user, pwd=pwd)
+    return format_device_list(results, user, pwd=pwd)
 
 
 def search_within_list(
     search_value, search_list, search_key):
     '''
-    Search list of dictionaries for a value within a certain key.
+    Searches list of dicts for value in specified key.
+
+    Args:
+        search_value: Value to find
+        search_list (list): List of dictionaries
+        search_key (str): Dictionary key to search
+
+    Returns:
+        dict/bool: Matching dict or False if not found
     '''
     for search_list_item in search_list:
         if search_list_item[search_key] == search_value:
@@ -359,7 +474,13 @@ def search_within_list(
 
 def prompt_yes_no(prompt_text) -> bool:
     '''
-    Prompt for confirmation.
+    Prompts user for yes/no confirmation (case-insensitive).
+
+    Args:
+        prompt_text (str): Prompt message
+
+    Returns:
+        bool: True if 'y', False otherwise
     '''
     yes_no = input(f'{prompt_text} -> ').lower()[:1]
 
@@ -368,11 +489,16 @@ def prompt_yes_no(prompt_text) -> bool:
 
 def file_loader(file_load, file_lines=None) -> list:
     '''
-    Loads file into a list.
-    Can load yaml, json, textFSM, or txt~ files.
+    Loads YAML, JSON, TextFSM, or text file into Python objects.
+
+    Args:
+        file_load (str): File path (.yaml, .json, .fsm, .txt)
+        file_lines (bool): Strip newlines from text files if True
+
+    Returns:
+        list/dict: File contents as appropriate type
     '''
     with open(file_load, 'r') as file_info:
-        debug_info = os.getcwd()
         if file_load.endswith('yaml') or file_load.endswith('yml'):
             return yaml.load(file_info, Loader=yaml.CBaseLoader)
         elif file_load.endswith('json'):
@@ -391,13 +517,19 @@ def file_loader(file_load, file_lines=None) -> list:
 
 
 def file_create(
-    file_name, file_dir, data,
+    file_name, file_dir, data, new_line=False,
     file_extension='txt', override=False) -> None:
     '''
-    Creates file. Will create folder path as needed.
-    Can create yaml, json, or txt~ files.
+    Creates YAML, JSON, or text file with automatic dir creation.
+
+    Args:
+        file_name (str): Filename without extension
+        file_dir (str): Directory path (auto-created)
+        data: Content to write
+        new_line (bool): Add newlines between list items
+        file_extension (str): File type (yaml, json, txt, crt, key, ini)
+        override (bool): Overwrite existing file
     '''
-    # TODO: Refactor
     if file_dir:
         if file_dir[-1:] != '/':
             file_dir += '/'
@@ -415,51 +547,56 @@ def file_create(
             data_file.writelines(yaml.dump(data, sort_keys=False, Dumper=IndentDumper))
         elif file_extension == 'json':
             json.dump(data, data_file, sort_keys=False, indent=1)
-        elif file_extension == 'txt' or 'ini':
-            data_file.writelines(data)
+        elif file_extension in ['txt', 'ini', 'crt', 'key']:
+            if new_line:
+                data_file.writelines(line + '\n' for line in data)
+            else:
+                data_file.writelines(data)
 
 
 def ping(host, attempts='3'):
     '''
+    Pings a single host (platform-aware: Windows vs Unix).
+
+    Args:
+        host (str): IP or hostname
+        attempts (str): Number of ping attempts (default: 3)
+
+    Returns:
+        str: Host if unreachable (bool: False if reachable)
     '''
-    suffix = '-c'
-    if system().lower() == 'windows':
-        suffix = '-n'
+    suffix = '-n' if system().lower()=='windows' else '-c'
+    results = call(
+        ['ping', suffix, attempts, host], stdout=DEVNULL)
 
-    results = run(
-        f'ping {host} {suffix} {attempts}',
-        stdout=DEVNULL)
-
-    if results.returncode != 0:
-        return host
+    return host if results!=0 else False
 
 
 def ping_list(host_list, attempts='3') -> list:
     '''
+    Pings multiple hosts in parallel (max 30 workers).
+
+    Args:
+        host_list (list): List of IPs/hostnames
+        attempts (str): Number of attempts per host
+
+    Returns:
+        list: Hosts that are NOT pingable
     '''
     if not isinstance(host_list, list):
         host_list = [host_list]
 
     with ThreadPoolExecutor(max_workers=30) as pool:
         ping_output = pool.map(
-            ping,
-            host_list,
+            ping, host_list,
             attempts * len(host_list))
 
-    ping_output_list = list(ping_output)
+    not_pingable = set()
+    for entry in list(ping_output):
+        if entry:
+            not_pingable.add(entry)
 
-    for output in ping_output_list[:]:
-        if not output:
-            ping_output_list.remove(output)
-
-    return ping_output_list
-
-
-def templates_folder():
-    '''
-    Locate module path for the template folder
-    '''
-    return f'{__file__.split("__")[0]}templates'
+    return list(not_pingable)
 
 
 # yaml offical fix
